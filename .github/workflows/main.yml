@@ -1,4 +1,4 @@
-name: CI/CD with DockerHub Image
+name: CI/CD Pipeline
 
 on:
   push:
@@ -6,12 +6,23 @@ on:
       - master
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
+    - name: Checkout code
       uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run tests
+      run: npm test
 
     - name: Log in to DockerHub
       uses: docker/login-action@v3
@@ -19,11 +30,8 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Pull nginx image
-      run: docker pull nginx:latest
+    - name: Build Docker image
+      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/node-app:latest .
 
-    - name: Tag image with your repo name
-      run: docker tag nginx:latest ${{ secrets.DOCKERHUB_USERNAME }}/my-nginx:latest
-
-    - name: Push image to your DockerHub
-      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/my-nginx:latest
+    - name: Push Docker image
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/node-app:latest
