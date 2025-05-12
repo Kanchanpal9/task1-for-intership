@@ -3,7 +3,7 @@ name: CI/CD with DockerHub Image
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   deploy:
