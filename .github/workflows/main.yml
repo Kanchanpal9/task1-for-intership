@@ -1,0 +1,29 @@
+name: CI/CD with DockerHub Image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Log in to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Pull nginx image
+      run: docker pull nginx:latest
+
+    - name: Tag image with your repo name
+      run: docker tag nginx:latest ${{ secrets.DOCKERHUB_USERNAME }}/my-nginx:latest
+
+    - name: Push image to your DockerHub
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/my-nginx:latest
