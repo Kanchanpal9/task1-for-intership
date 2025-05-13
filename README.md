@@ -38,64 +38,54 @@ node-docker-ci/
 Create a folder and inside it:
 
 app.js
-js
-Copy
-Edit
-const http = require('http');
-const port = 3000;
 
-const requestHandler = (req, res) => {
-  res.end('Hello from Node.js App deployed with CI/CD 🚀');
-};
-
-const server = http.createServer(requestHandler);
-
-server.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
-package.json
-json
-Copy
-Edit
 {
-  "name": "node-app",
+  "name": "myapp",
   "version": "1.0.0",
-  "description": "Simple Node.js app for CI/CD demo",
+  "description": "A simple Node.js app for Jenkins CI/CD",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "test": "echo \"No tests yet\" && exit 0"
+    "test": "echo \"No test yet\" && exit 0"
   },
-  "author": "kanchanpal",
-  "license": "ISC"
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }
-Run these in terminal to install dependencies:
 
-bash
-Copy
-Edit
+package.json
+{
+  "name": "myapp",
+  "version": "1.0.0",
+  "description": "A simple Node.js app for Jenkins CI/CD",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"No test yet\" && exit 0"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
+
 npm install
 🐳 Step 2: Create Dockerfile
-Dockerfile
-Dockerfile
-Copy
-Edit
-# Base image
+# Use official Node.js image
 FROM node:18
 
 # Set working directory
 WORKDIR /app
 
 # Copy files
-COPY . .
-
-# Install dependencies
+COPY package*.json ./
 RUN npm install
 
-# Expose port
+COPY . .
+
+# Expose the app port
 EXPOSE 3000
 
-# Start app
+# Start the app
 CMD ["npm", "start"]
 
 🔄 Step 3: Create GitHub Actions Workflow
@@ -110,42 +100,28 @@ on:
     branches:
       - main  # or "master" if your branch is named that
 
+
+Step 4: Create main.yml
+name: CI/CD Pipeline with Docker
+
+on:
+  push:
+    branches: [ master]
+
 jobs:
-  build-and-deploy:
+  build-and-run:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-
-    - name: Install dependencies
-      run: npm install
-
-    - name: Run tests
-      run: npm test
-
-    - name: Log in to DockerHub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v2
 
     - name: Build Docker image
-      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/node-app:latest .
+      run: docker build -t myapp .
 
-    - name: Push Docker image
-      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/node-app:
-
-
-      🔐 Step 4: Set GitHub Secrets
-Go to your GitHub repo → Settings → Secrets and variables → Actions → New repository secret:
-
-DOCKERHUB_USERNAME = your DockerHub username
-
-DOCKERHUB_TOKEN = DockerHub Access Token from here
+    - name: Run Docker container
+      run: docker run -d -p 3000:3000 myapp
 
