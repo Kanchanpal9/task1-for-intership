@@ -91,18 +91,7 @@ CMD ["npm", "start"]
 
 🔄 Step 3: Create GitHub Actions Workflow
 .github/workflows/main.yml
-yaml
-Copy
-Edit
-name: CI/CD Pipeline
 
-on:
-  push:
-    branches:
-      - main  # or "master" if your branch is named that
-
-
-Step 4: Create main.yml
 name: CI/CD Pipeline with Docker
 
 on:
